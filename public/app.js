@@ -19,7 +19,7 @@ function fetchJobs(searchTerm = '') {
         .then(data => {
             const jobListings = document.getElementById('job-listings');
             jobListings.innerHTML = data.map(job => `
-                <div class="job-post">
+                <div class="job-post" onclick="window.location.href='/job/${job.id}'">
                     <div class="job-left">
                         <h2>${job.title}</h2>
                         <p><span>Company:</span> ${job.company}</p>
