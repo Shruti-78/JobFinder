@@ -6,7 +6,7 @@ function fetchJobs() {
         .then(data => {
             const jobListings = document.getElementById('job-listings');
             jobListings.innerHTML = data.map(job => `
-                <div class="job-post">
+                <div class="job-post" onclick="window.location.href='/job/${job.id}'">
                     <div class="job-left">
                         <h2>${job.title}</h2>
                         <p><span>Company:</span> ${job.company}</p>
@@ -21,6 +21,7 @@ function fetchJobs() {
         });
 }
 
+
 document.getElementById('search-bar').addEventListener('keypress', function (e) {
     if (e.key === 'Enter') {
         searchJobs();
@@ -30,14 +31,20 @@ document.getElementById('search-bar').addEventListener('keypress', function (e) 
 function searchJobs() {
     const query = document.getElementById('search-bar').value.toLowerCase();
     const jobPosts = document.querySelectorAll('.job-post');
+
     jobPosts.forEach(post => {
         if (post.textContent.toLowerCase().includes(query)) {
-            post.style.display = 'flex'; // Show it again
+            post.parentElement.style.display = 'block'; // Show parent <a>
         } else {
-            post.style.display = 'none'; // Completely remove from layout
+            post.parentElement.style.display = 'none'; // Hide parent <a>
         }
     });
 }
+
+function navigateTo(page) {
+    alert(`Navigating to ${page} page...`);
+}
+
 
 // function searchJobs() {
 //     const query = document.getElementById('search-bar').value.toLowerCase();
