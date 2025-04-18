@@ -1,7 +1,20 @@
-document.addEventListener('DOMContentLoaded', fetchJobs);
+//app.js
+document.addEventListener('DOMContentLoaded', () => {
+    fetchJobs(); // Load all jobs on page load
 
-function fetchJobs() {
-    fetch('/jobs')
+    document.getElementById('search-bar').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            searchJobs();
+        }
+    });
+});
+
+function fetchJobs(searchTerm = '') {
+    const url = searchTerm.trim() === '' 
+        ? '/jobs' 
+        : `/search-vuln?q=${encodeURIComponent(searchTerm)}`;
+
+    fetch(url)
         .then(response => response.json())
         .then(data => {
             const jobListings = document.getElementById('job-listings');
@@ -21,40 +34,23 @@ function fetchJobs() {
         });
 }
 
-document.getElementById('search-bar').addEventListener('keypress', function (e) {
-    if (e.key === 'Enter') {
-        searchJobs();
-    }
-});
-
 function searchJobs() {
-    const query = document.getElementById('search-bar').value.toLowerCase();
-    const jobPosts = document.querySelectorAll('.job-post');
-    jobPosts.forEach(post => {
-        if (post.textContent.toLowerCase().includes(query)) {
-            post.style.display = 'flex'; // Show it again
-        } else {
-            post.style.display = 'none'; // Completely remove from layout
-        }
-    });
+    const query = document.getElementById('search-bar').value;
+    fetchJobs(query);
 }
+
 
 // function searchJobs() {
 //     const query = document.getElementById('search-bar').value.toLowerCase();
 //     const jobPosts = document.querySelectorAll('.job-post');
 //     jobPosts.forEach(post => {
 //         if (post.textContent.toLowerCase().includes(query)) {
-//             post.style.visibility = 'visible'; // Keep the tile in the layout
-//             post.style.height = 'auto'; // Reset height
-//             post.style.opacity = 1; // Ensure it's fully visible
+//             post.style.display = 'flex'; // Show it again
 //         } else {
-//             post.style.visibility = 'hidden'; // Hide the tile
-//             post.style.height = 0; // Minimize height
-//             post.style.opacity = 0; // Fade out for smooth effect
+//             post.style.display = 'none'; // Completely remove from layout
 //         }
 //     });
 // }
-
 
 function navigateTo(page) {
     alert(`Navigating to ${page} page...`);
