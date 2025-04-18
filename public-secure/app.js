@@ -12,14 +12,14 @@ document.addEventListener('DOMContentLoaded', () => {
 function fetchJobs(searchTerm = '') {
     const url = searchTerm.trim() === '' 
         ? '/jobs' 
-        : `/search-vuln?q=${encodeURIComponent(searchTerm)}`;
+        : `/search-secure?q=${encodeURIComponent(searchTerm)}`;
 
     fetch(url)
         .then(response => response.json())
         .then(data => {
             const jobListings = document.getElementById('job-listings');
             jobListings.innerHTML = data.map(job => `
-                <div class="job-post" onclick="window.location.href='/job/${job.id}'">
+                <div class="job-post">
                     <div class="job-left">
                         <h2>${job.title}</h2>
                         <p><span>Company:</span> ${job.company}</p>
@@ -33,6 +33,7 @@ function fetchJobs(searchTerm = '') {
             `).join('');
         });
 }
+
 
 function searchJobs() {
     const query = document.getElementById('search-bar').value;

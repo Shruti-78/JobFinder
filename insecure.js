@@ -1,3 +1,4 @@
+//insecure.js
 const express = require('express');
 const sqlite3 = require('sqlite3').verbose();
 
@@ -104,33 +105,19 @@ app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
 });
 
+app.get('/search-vuln', (req, res) => {
+    const queryParam = req.query.q || '';
+    const sql = `SELECT title, company, ctc, location, job_vacancy_status as vacancy FROM jobs WHERE job_vacancy_status = 'open' and title LIKE '%${queryParam}%'`;  // 🚨 vulnerable
 
+    db.all(sql, [], (err, rows) => {
+        if (err) {
+            console.error("SQL Error:", err.message);
+            res.status(500).send('Internal Server Error');
+            return;
+        }
+        res.json(rows);
+    });
+});
 
-
-// const express = require('express');
-// const bodyParser = require('body-parser');
-// const db = require('./db');
-
-// const app = express();
-// app.set('view engine', 'ejs');
-// app.use(bodyParser.urlencoded({ extended: true }));
-
-// // Vulnerable login
-// app.get('/', (req, res) => res.render('login'));
-// app.post('/login', (req, res) => {
-//   const { username, password } = req.body;
-//   const query = `SELECT * FROM users WHERE username = '${username}' AND password = '${password}'`;
-//   db.get(query, (err, row) => {
-//     if (row) res.send(`Welcome ${row.username}`);
-//     else res.send('Login failed');
-//   });
-// });
-
-// // Vulnerable comment (no escaping)
-// app.get('/comment', (req, res) => res.render('comment'));
-// app.post('/comment', (req, res) => {
-//   const { comment } = req.body;
-//   res.send(`<h2>Comment Received:</h2> ${comment}`);
-// });
-
-// app.listen(3000, () => console.log('⚠️ Insecure HTTP server running on http://localhost:3000'));
+// query to show vulnerablity in website
+//' UNION SELECT username, email, null, password, null FROM users -- 
