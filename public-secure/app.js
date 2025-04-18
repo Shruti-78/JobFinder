@@ -12,7 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function fetchJobs(searchTerm = '') {
     const url = searchTerm.trim() === '' 
         ? '/jobs' 
-        : `/search-vuln?q=${encodeURIComponent(searchTerm)}`;
+        : `/search-secure?q=${encodeURIComponent(searchTerm)}`;
 
     fetch(url)
         .then(response => response.json())
@@ -33,6 +33,7 @@ function fetchJobs(searchTerm = '') {
             `).join('');
         });
 }
+
 
 function searchJobs() {
     const query = document.getElementById('search-bar').value;
