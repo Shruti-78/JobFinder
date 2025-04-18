@@ -1,45 +1,54 @@
 const fs = require('fs');
 const https = require('https');
 const express = require('express');
+const sqlite3 = require('sqlite3').verbose();
 const bodyParser = require('body-parser');
-const db = require('./db');
 const path = require('path');
 
 const app = express();
-app.set('view engine', 'ejs');
-app.use(bodyParser.urlencoded({ extended: true }));
+const port = 4433;
 
-// Secure login with parameterized query
-app.get('/', (req, res) => res.render('login'));
-app.post('/login', (req, res) => {
-  const { username, password } = req.body;
-  db.get("SELECT * FROM users WHERE username = ? AND password = ?", [username, password], (err, row) => {
-    if (row) res.send(`Welcome ${row.username}`);
-    else res.send('Login failed');
-  });
-});
-
-// Secure comment with escaping
-function escapeHTML(str) {
-  return str.replace(/[&<>"']/g, char => ({
-    '&': '&amp;', '<': '&lt;', '>': '&gt;',
-    '"': '&quot;', "'": '&#039;'
-  }[char]));
-}
-
-app.get('/comment', (req, res) => res.render('comment'));
-app.post('/comment', (req, res) => {
-  const { comment } = req.body;
-  res.send(`<h2>Comment Received:</h2> ${escapeHTML(comment)}`);
-});
-
-// Load SSL certificate and key from the certs folder
+// Load SSL certificate and key
 const sslOptions = {
   key: fs.readFileSync(path.join(__dirname, 'certs', 'localhost-key.pem')),
   cert: fs.readFileSync(path.join(__dirname, 'certs', 'localhost.pem')),
 };
 
-// Start the HTTPS server on port 4433
-https.createServer(sslOptions, app).listen(4433, () => {
-  console.log('🔒 HTTPS server running at https://localhost:4433');
+// Database setup
+const db = new sqlite3.Database('./data.db');
+
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('public-secure'));
+
+// GET all open jobs securely
+app.get('/jobs', (req, res) => {
+  const sql = `SELECT title, company, ctc, location, job_vacancy_status AS vacancy FROM jobs WHERE job_vacancy_status = ?`;
+  db.all(sql, ['open'], (err, rows) => {
+    if (err) {
+      console.error('SQL Error:', err.message);
+      return res.status(500).send('Internal Server Error');
+    }
+    res.json(rows);
+  });
+});
+
+// Secure search endpoint (uses parameterized query)
+app.get('/search-secure', (req, res) => {
+  const queryParam = `%${req.query.q || ''}%`;
+  const sql = `SELECT title, company, ctc, location, job_vacancy_status AS vacancy FROM jobs WHERE job_vacancy_status = ? AND title LIKE ?`;
+
+  db.all(sql, ['open', queryParam], (err, rows) => {
+    if (err) {
+      console.error('SQL Error:', err.message);
+      return res.status(500).send('Internal Server Error');
+    }
+    res.json(rows);
+  });
+});
+
+// HTTPS server start
+https.createServer(sslOptions, app).listen(port, () => {
+  console.log(`🔒 Secure server running at https://localhost:${port}`);
 });
