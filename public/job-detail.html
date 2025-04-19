@@ -186,6 +186,9 @@
     <script>
         const jobId = window.location.pathname.split('/').pop();
 
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
+
         fetch(`/api/job/${jobId}`)
             .then(res => res.json())
             .then(job => {
@@ -236,7 +239,7 @@
             fetch(`/api/job/${jobId}/feedback`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ comment })
+                body: JSON.stringify({ comment, userId })
             })
             .then(res => res.json())
             .then(data => {

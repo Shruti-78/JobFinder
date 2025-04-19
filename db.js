@@ -4,43 +4,45 @@ const db = new sqlite3.Database('./data.db');
 db.serialize(() => {
   // Drop existing tables
 //   db.run(`DROP TABLE IF EXISTS jobs`);
-//   db.run(`DROP TABLE IF EXISTS users`);
+  db.run(`DROP TABLE IF EXISTS feedback`);
 
   // Create users table
-  db.run(`
-    CREATE TABLE users (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      username TEXT UNIQUE NOT NULL,
-      email TEXT UNIQUE NOT NULL,
-      password TEXT NOT NULL,
-      role TEXT CHECK(role IN ('employer', 'jobseeker')) NOT NULL,
-      created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
-  `);
+  // db.run(`
+  //   CREATE TABLE users (
+  //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+  //     username TEXT UNIQUE NOT NULL,
+  //     email TEXT UNIQUE NOT NULL,
+  //     password TEXT NOT NULL,
+  //     role TEXT CHECK(role IN ('employer', 'jobseeker')) NOT NULL,
+  //     created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  //   )
+  // `);
 
   // Create jobs table with new columns
-  db.run(`
-    CREATE TABLE jobs (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      title TEXT NOT NULL,
-      description TEXT NOT NULL,
-      company TEXT NOT NULL,
-      location TEXT NOT NULL,
-      posted_by INTEGER NOT NULL,
-      posted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-      ctc TEXT,
-      company_website TEXT,
-      job_vacancy_status TEXT CHECK(job_vacancy_status IN ('open', 'closed')) NOT NULL,
-      FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
-    )
-  `);
+  // db.run(`
+  //   CREATE TABLE jobs (
+  //     id INTEGER PRIMARY KEY AUTOINCREMENT,
+  //     title TEXT NOT NULL,
+  //     description TEXT NOT NULL,
+  //     company TEXT NOT NULL,
+  //     location TEXT NOT NULL,
+  //     posted_by INTEGER NOT NULL,
+  //     posted_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  //     ctc TEXT,
+  //     company_website TEXT,
+  //     job_vacancy_status TEXT CHECK(job_vacancy_status IN ('open', 'closed')) NOT NULL,
+  //     FOREIGN KEY (posted_by) REFERENCES users(id) ON DELETE CASCADE
+  //   )
+  // `);
 
   db.run(`
   CREATE TABLE IF NOT EXISTS feedback (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
     job_id INTEGER NOT NULL,
     comment TEXT NOT NULL,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (job_id) REFERENCES jobs(id) ON DELETE CASCADE
   )
 `);
