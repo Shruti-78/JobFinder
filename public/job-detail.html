@@ -54,7 +54,7 @@
             flex: 2;
         }
 
-        h1 {
+        h1, h2 {
             color: #0078D7;
             margin-top: 0;
         }
@@ -90,10 +90,6 @@
             margin-top: 40px;
         }
 
-        .feedback-section h2 {
-            color: #0078D7;
-        }
-
         textarea {
             width: 100%;
             height: 100px;
@@ -105,16 +101,31 @@
             resize: none;
         }
 
-        .carousel {
-    margin-top: 20px;
-    background: #e6f0fb;
-    padding: 15px;
-    border-radius: 10px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 15px;
-}
+        .feedback-section button {
+            margin-top: 10px;
+            background-color: #005fa3;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
 
+        .feedback-section button:hover {
+            background-color: #00457c;
+        }
+
+        .carousel {
+            margin-top: 20px;
+            background: #e6f0fb;
+            padding: 15px;
+            border-radius: 10px;
+            display: flex;
+            flex-wrap: nowrap;
+            gap: 15px;
+            overflow-x: auto;
+        }
 
         .carousel-item {
             flex: 0 0 auto;
@@ -124,6 +135,7 @@
             border-radius: 8px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
             font-size: 0.9rem;
+            white-space: nowrap;
         }
 
         @media (max-width: 900px) {
@@ -154,7 +166,6 @@
                     <button onclick="applyNow()">Apply for this Job</button>
                 </div>
             </div>
-            
 
             <div class="job-description">
                 <h2>Description</h2>
@@ -165,9 +176,7 @@
                     <textarea placeholder="Write your feedback..."></textarea>
                     <button>Submit Feedback</button>
                     <div class="carousel" id="feedback-carousel">
-                        <div class="carousel-item">"Great opportunity!"</div>
-                        <div class="carousel-item">"Nice UI and experience."</div>
-                        <div class="carousel-item">"Would love to work here!"</div>
+                        <!-- feedback items will be injected here -->
                     </div>
                 </div>
             </div>
@@ -176,12 +185,11 @@
 
     <script>
         const jobId = window.location.pathname.split('/').pop();
-    
+
         fetch(`/api/job/${jobId}`)
             .then(res => res.json())
             .then(job => {
                 if (job.error) return alert(job.error);
-    
                 document.getElementById('job-title').textContent = job.title;
                 document.getElementById('job-company').textContent = job.company;
                 document.getElementById('job-location').textContent = job.location;
@@ -191,28 +199,26 @@
                 document.getElementById('job-status').textContent = job.job_vacancy_status;
                 document.getElementById('job-postedat').textContent = new Date(job.posted_at).toLocaleString();
             });
-    
+
         fetch(`/api/job/${jobId}/feedback`)
             .then(res => res.json())
             .then(feedbacks => {
                 feedbacks.forEach(f => addFeedbackToCarousel(f.comment));
             });
-    
-        // Vulnerable feedback rendering (uses innerHTML)
+
         function addFeedbackToCarousel(comment) {
             const carousel = document.getElementById('feedback-carousel');
             const div = document.createElement('div');
             div.className = 'carousel-item';
-            div.innerHTML = comment; // DO NOT wrap in quotes
-; // <-- XSS vulnerability here
+            div.innerHTML = comment; // XSS vulnerability
             carousel.appendChild(div);
         }
-    
+
         function applyNow() {
             window.location.href = `/apply.html?jobId=${jobId}`;
         }
-    
-        // Auto-scroll carousel
+
+        // Scroll carousel automatically
         const carousel = document.getElementById('feedback-carousel');
         setInterval(() => {
             carousel.scrollLeft += 1;
@@ -220,14 +226,13 @@
                 carousel.scrollLeft = 0;
             }
         }, 50);
-    
-        // Feedback submission handler
+
+        // Feedback submit
         document.querySelector('.feedback-section button').addEventListener('click', () => {
             const commentBox = document.querySelector('textarea');
             const comment = commentBox.value.trim();
-    
             if (!comment) return alert('Please write something!');
-    
+
             fetch(`/api/job/${jobId}/feedback`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -237,12 +242,10 @@
             .then(data => {
                 commentBox.value = '';
                 if (data.comment) {
-                    addFeedbackToCarousel(data.comment); // still vulnerable
+                    addFeedbackToCarousel(data.comment);
                 }
             });
         });
     </script>
-    
-    
 </body>
 </html>

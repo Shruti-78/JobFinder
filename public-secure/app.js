@@ -1,4 +1,3 @@
-//app.js
 document.addEventListener('DOMContentLoaded', () => {
     fetchJobs(); // Load all jobs on page load
 
@@ -9,6 +8,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Fetch all jobs or search based on the term
 function fetchJobs(searchTerm = '') {
     const url = searchTerm.trim() === '' 
         ? '/jobs' 
@@ -19,7 +19,7 @@ function fetchJobs(searchTerm = '') {
         .then(data => {
             const jobListings = document.getElementById('job-listings');
             jobListings.innerHTML = data.map(job => `
-                <div class="job-post">
+                <div class="job-post" onclick="window.location.href='/job/${job.id}'" style="cursor: pointer;">
                     <div class="job-left">
                         <h2>${job.title}</h2>
                         <p><span>Company:</span> ${job.company}</p>
@@ -31,10 +31,11 @@ function fetchJobs(searchTerm = '') {
                     </div>
                 </div>
             `).join('');
-        });
+        })
+        .catch(err => console.error('Error fetching jobs:', err));  // Error handling for fetch
 }
 
-
+// Search function to fetch jobs based on search input
 function searchJobs() {
     const query = document.getElementById('search-bar').value;
     fetchJobs(query);
