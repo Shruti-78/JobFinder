@@ -151,3 +151,5 @@ app.get('/search-vuln', (req, res) => {
 
 // query to show vulnerablity in website
 //' UNION SELECT username, email, null, password, null FROM users -- 
+//<img src="x" onerror="if(!window.shown){alert('This site is vulnerable!');window.shown=1;location.href='https://wikipedia.com'}">
+
