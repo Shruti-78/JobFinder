@@ -165,9 +165,6 @@
                     <textarea placeholder="Write your feedback..."></textarea>
                     <button>Submit Feedback</button>
                     <div class="carousel" id="feedback-carousel">
-                        <div class="carousel-item">"Great opportunity!"</div>
-                        <div class="carousel-item">"Nice UI and experience."</div>
-                        <div class="carousel-item">"Would love to work here!"</div>
                     </div>
                 </div>
             </div>
@@ -176,6 +173,8 @@
 
     <script>
         const jobId = window.location.pathname.split('/').pop();
+        const urlParams = new URLSearchParams(window.location.search);
+        const userId = urlParams.get('userId');
     
         fetch(`/api/job/${jobId}`)
             .then(res => res.json())
@@ -231,7 +230,7 @@
             fetch(`/api/job/${jobId}/feedback`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ comment })
+                body: JSON.stringify({ comment, userId })
             })
             .then(res => res.json())
             .then(data => {

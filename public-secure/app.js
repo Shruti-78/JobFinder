@@ -1,4 +1,10 @@
 //app.js
+const urlParams = new URLSearchParams(window.location.search);
+const userId = urlParams.get('userId');
+if (!userId) {
+    window.location.href = '/login.html';
+  }
+
 document.addEventListener('DOMContentLoaded', () => {
     fetchJobs(); // Load all jobs on page load
 
@@ -19,6 +25,7 @@ function fetchJobs(searchTerm = '') {
         .then(data => {
             const jobListings = document.getElementById('job-listings');
             jobListings.innerHTML = data.map(job => `
+                <div class="job-post" onclick="window.location.href='/job/${job.id}?userId=${userId}'">
                 <div class="job-post">
                     <div class="job-left">
                         <h2>${job.title}</h2>

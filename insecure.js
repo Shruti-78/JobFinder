@@ -10,6 +10,40 @@ const db = new sqlite3.Database('./data.db');
 
 app.use(express.static('public'));
 
+app.use(express.urlencoded({ extended: true })); // for parsing form submissions
+app.use(express.json()); // for JSON payloads
+
+app.get('/', (req, res) => {
+res.redirect('/login.html');
+});
+
+// Signup logic
+app.post('/signup', (req, res) => {
+const { username, email, password, role } = req.body;
+const sql = `INSERT INTO users (username, email, password, role) VALUES (?, ?, ?, ?)`;
+
+db.run(sql, [username, email, password, 'jobseeker'], function (err) {
+    if (err) {
+    return res.send('Signup failed: ' + err.message);
+    }
+    res.redirect(`/login.html`);
+});
+});
+
+// Login logic
+app.post('/login', (req, res) => {
+const { email, password } = req.body;
+
+db.get(`SELECT * FROM users WHERE email = ? AND password = ?`, [email, password], (err, user) => {
+    if (err || !user) {
+    return res.send('Invalid login credentials.');
+    }
+
+    // Manually forward userId using query param (or cookie if needed)
+    res.redirect(`/index.html?userId=${user.id}`);
+});
+});
+
 app.get('/jobs', (req, res) => {
     db.all(`SELECT id,title, company, ctc, location, job_vacancy_status AS vacancy FROM jobs WHERE job_vacancy_status = 'open'`, [], (err, rows) => {
         if (err) {
@@ -60,18 +94,17 @@ app.get('/api/job/:id', (req, res) => {
     );
 });
 
-app.use(express.json());
 
 app.post('/api/job/:id/feedback', (req, res) => {
     const jobId = req.params.id;
-    const { comment } = req.body;
+    const { comment, userId } = req.body;
 
     if (!comment) {
         return res.status(400).json({ error: 'Comment cannot be empty' });
     }
 
-    const query = `INSERT INTO feedback (job_id, comment) VALUES (?, ?)`;
-    db.run(query, [jobId, comment], function (err) {
+    const query = `INSERT INTO feedback (user_id, job_id, comment) VALUES (?, ?, ?)`;
+    db.run(query, [userId, jobId, comment], function (err) {
         if (err) {
             console.error(err);
             return res.status(500).json({ error: 'Failed to insert feedback' });
@@ -95,9 +128,6 @@ app.get('/api/job/:id/feedback', (req, res) => {
         }
     );
 });
-
-
-
 
 
 
