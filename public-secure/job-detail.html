@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Job Details</title>
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0f6ff;
+            color: #333;
+        }
+
+        .page-container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #0078D7;
+            color: white;
+            padding: 20px 40px;
+            font-size: 1.5rem;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            padding: 40px;
+            gap: 40px;
+            background-color: #f0f6ff;
+        }
+
+        .job-detail, .job-description {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .job-detail {
+            flex: 1;
+            max-width: 400px;
+            border-left: 6px solid #0078D7;
+        }
+
+        .job-description {
+            flex: 2;
+        }
+
+        h1, h2 {
+            color: #0078D7;
+            margin-top: 0;
+        }
+
+        .job-detail p, .job-description p {
+            margin: 10px 0;
+        }
+
+        .job-detail span {
+            font-weight: bold;
+            color: #005fa3;
+        }
+
+        .actions {
+            margin-top: 25px;
+        }
+
+        .actions button {
+            background-color: #0078D7;
+            color: white;
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .actions button:hover {
+            background-color: #005fa3;
+        }
+
+        .feedback-section {
+            margin-top: 40px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+            font-size: 1rem;
+            resize: none;
+        }
+
+        .feedback-section button {
+            margin-top: 10px;
+            background-color: #005fa3;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .feedback-section button:hover {
+            background-color: #00457c;
+        }
+
+        .feedback-list {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .feedback-item {
+            padding: 12px;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            font-size: 0.95rem;
+        }
+
+        @media (max-width: 900px) {
+            main {
+                flex-direction: column;
+                padding: 20px;
+            }
+
+            .job-detail, .job-description {
+                max-width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page-container">
+    <header>Job Portal</header>
+    <main>
+        <div class="job-detail">
+            <h1 id="job-title">Loading...</h1>
+            <p><span>Company:</span> <span id="job-company"></span></p>
+            <p><span>Location:</span> <span id="job-location"></span></p>
+            <p><span>CTC:</span> <span id="job-ctc"></span></p>
+            <p><span>Status:</span> <span id="job-status"></span></p>
+            <p><span>Posted At:</span> <span id="job-postedat"></span></p>
+            <p><span>Website:</span> <a id="job-website" href="#" target="_blank">Visit</a></p>
+            <div class="actions">
+                <button onclick="applyNow()">Apply for this Job</button>
+            </div>
+        </div>
+
+        <div class="job-description">
+            <h2>Description</h2>
+            <p id="job-description">Loading...</p>
+
+            <div class="feedback-section">
+                <h2>Feedback</h2>
+                <textarea placeholder="Write your feedback..."></textarea>
+                <button>Submit Feedback</button>
+                <div class="feedback-list" id="feedback-list">
+                    <!-- feedback items will appear here -->
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script>
+    const jobId = window.location.pathname.split('/').pop();
+
+    function escapeHTML(str) {
+        return str.replace(/[&<>"']/g, match => ({
+            '&': '&amp;',
+            '<': '&lt;',
+            '>': '&gt;',
+            '"': '&quot;',
+            "'": '&#039;',
+        }[match]));
+    }
+
+    fetch(`/api/job/${jobId}`)
+        .then(res => res.json())
+        .then(job => {
+            if (job.error) return alert(job.error);
+            document.getElementById('job-title').textContent = job.title;
+            document.getElementById('job-company').textContent = job.company;
+            document.getElementById('job-location').textContent = job.location;
+            document.getElementById('job-ctc').textContent = job.ctc;
+            document.getElementById('job-description').textContent = job.description;
+            document.getElementById('job-website').href = job.company_website;
+            document.getElementById('job-status').textContent = job.job_vacancy_status;
+            document.getElementById('job-postedat').textContent = new Date(job.posted_at).toLocaleString();
+        });
+
+    fetch(`/api/job/${jobId}/feedback`)
+        .then(res => res.json())
+        .then(feedbacks => {
+            feedbacks.forEach(f => addFeedbackToList(f.comment));
+        });
+
+    function addFeedbackToList(comment) {
+        const list = document.getElementById('feedback-list');
+        const div = document.createElement('div');
+        div.className = 'feedback-item';
+        div.textContent = comment; // Safe
+        list.appendChild(div);
+    }
+
+    function applyNow() {
+        window.location.href = `/apply.html?jobId=${jobId}`;
+    }
+
+    document.querySelector('.feedback-section button').addEventListener('click', () => {
+        const commentBox = document.querySelector('textarea');
+        const comment = commentBox.value.trim();
+        if (!comment) return alert('Please write something!');
+
+        fetch(`/api/job/${jobId}/feedback`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ comment })
+        })
+        .then(res => res.json())
+        .then(data => {
+            commentBox.value = '';
+            if (data.comment) {
+                addFeedbackToList(data.comment);
+            }
+        });
+    });
+</script>
+</body>
+</html>
