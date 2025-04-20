@@ -178,6 +178,8 @@
 
 <script>
     const jobId = window.location.pathname.split('/').pop();
+    const urlParams = new URLSearchParams(window.location.search);
+    const userId = urlParams.get('userId');
 
     function escapeHTML(str) {
         return str.replace(/[&<>"']/g, match => ({
@@ -229,7 +231,7 @@
         fetch(`/api/job/${jobId}/feedback`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ comment })
+            body: JSON.stringify({ comment, userId })
         })
         .then(res => res.json())
         .then(data => {
