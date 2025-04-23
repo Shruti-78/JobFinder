@@ -61,7 +61,7 @@ app.get('/', (req, res) => {
       }
   
       // Manually forward userId using query param (or cookie if needed)
-      res.redirect(`/index.html?userId=${user.id}`);
+      res.send(`/index.html?userId=${user.id}`);
   });
   });
 
